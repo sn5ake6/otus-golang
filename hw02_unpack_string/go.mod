@@ -1,4 +1,4 @@
-module github.com/sn5ake6/hw02_unpack_string
+module github.com/sn5ake6/otus-golang/hw02_unpack_string
 
 go 1.16
 

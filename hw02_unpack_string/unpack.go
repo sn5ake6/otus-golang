@@ -29,7 +29,10 @@ func Unpack(s string) (string, error) {
 				return "", ErrInvalidString
 			}
 
-			count, _ := strconv.Atoi(string(char))
+			count, err := strconv.Atoi(string(char))
+			if err != nil {
+				return "", err
+			}
 			if count > 0 {
 				repeatedPreviousChar := strings.Repeat(string(previousChar), count)
 				b.WriteString(repeatedPreviousChar)
