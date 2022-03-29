@@ -1,4 +1,4 @@
-module github.com/sn5ake6/hw03_frequency_analysis
+module github.com/sn5ake6/otus-golang/hw03_frequency_analysis
 
 go 1.16
 
