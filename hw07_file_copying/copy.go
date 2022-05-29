@@ -34,11 +34,9 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return ErrOffsetExceedsFileSize
 	}
 
-	var countToRead int64
+	countToRead := fileSize - offset
 	if limit > 0 && (offset+limit) < fileSize {
 		countToRead = limit
-	} else {
-		countToRead = fileSize - offset
 	}
 
 	if offset > 0 {
