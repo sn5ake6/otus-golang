@@ -62,4 +62,58 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	t.Run("connection cases", func(t *testing.T) {
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+		client := NewTelnetClient(l.Addr().String(), time.Second, ioutil.NopCloser(in), out)
+		require.NoError(t, client.Connect())
+		defer func() { require.NoError(t, client.Close()) }()
+
+		require.NoError(t, l.Close())
+
+		client2 := NewTelnetClient(l.Addr().String(), time.Second, ioutil.NopCloser(in), out)
+		require.NotNil(t, client2.Connect())
+	})
+
+	t.Run("timeout cases", func(t *testing.T) {
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+		defer func() { require.NoError(t, l.Close()) }()
+
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+
+		client := NewTelnetClient(l.Addr().String(), time.Second, ioutil.NopCloser(in), out)
+		require.NoError(t, client.Connect())
+		defer func() { require.NoError(t, client.Close()) }()
+
+		client2 := NewTelnetClient(l.Addr().String(), time.Nanosecond, ioutil.NopCloser(in), out)
+		require.NotNil(t, client2.Connect())
+	})
+
+	t.Run("reset by peer cases", func(t *testing.T) {
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+
+		client := NewTelnetClient(l.Addr().String(), time.Second, ioutil.NopCloser(in), out)
+		require.NoError(t, client.Connect())
+
+		require.NoError(t, l.Close())
+
+		in.WriteString("hello\n")
+		err = client.Send()
+		require.NotNil(t, err)
+
+		require.NoError(t, client.Close())
+
+		err = client.Receive()
+		require.NotNil(t, err)
+	})
 }
