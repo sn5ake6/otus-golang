@@ -3,21 +3,39 @@ package main
 import (
 	"context"
 	"flag"
-	"os"
+	"log"
+	"net"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	_ "github.com/jackc/pgx/stdlib"
+	"github.com/sn5ake6/otus-golang/hw12_13_14_15_calendar/internal/app"
+	"github.com/sn5ake6/otus-golang/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/sn5ake6/otus-golang/hw12_13_14_15_calendar/internal/server/http"
+	memorystorage "github.com/sn5ake6/otus-golang/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/sn5ake6/otus-golang/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "configs/config.toml", "Path to configuration file")
+}
+
+func NewStorage(storageConfig StorageConf) app.Storage {
+	var storage app.Storage
+
+	switch storageConfig.Type {
+	case "memory":
+		storage = memorystorage.New()
+	case "sql":
+		storage = sqlstorage.New(storageConfig.Dsn)
+	default:
+		log.Fatal("Unknown storage type: " + storageConfig.Type)
+	}
+
+	return storage
 }
 
 func main() {
@@ -28,17 +46,36 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+func run() error {
+	config, err := LoadConfig(configFile)
+	if err != nil {
+		return err
+	}
 
-	server := internalhttp.NewServer(logg, calendar)
+	logg, err := logger.New(config.Logger.Level)
+	if err != nil {
+		return err
+	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
+
+	storage := NewStorage(config.Storage)
+	err = storage.Connect(ctx)
+	if err != nil {
+		return err
+	}
+
+	calendar := app.New(logg, storage)
+
+	addr := net.JoinHostPort(config.HTTPServer.Host, config.HTTPServer.Port)
+	server := internalhttp.NewServer(addr, logg, calendar)
 
 	go func() {
 		<-ctx.Done()
@@ -55,7 +92,9 @@ func main() {
 
 	if err := server.Start(ctx); err != nil {
 		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+
+		return err
 	}
+
+	return nil
 }
