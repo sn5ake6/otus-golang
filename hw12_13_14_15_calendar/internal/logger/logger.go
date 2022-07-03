@@ -1,20 +1,55 @@
 package logger
 
-import "fmt"
+import (
+	"net/http"
+	"time"
 
-type Logger struct { // TODO
+	"github.com/sirupsen/logrus"
+)
+
+type Logger struct {
+	logger *logrus.Logger
 }
 
-func New(level string) *Logger {
-	return &Logger{}
-}
+func New(level string) (*Logger, error) {
+	logg := logrus.New()
 
-func (l Logger) Info(msg string) {
-	fmt.Println(msg)
+	logrusLevel, err := logrus.ParseLevel(level)
+	if err != nil {
+		return nil, err
+	}
+
+	logg.SetLevel(logrusLevel)
+
+	return &Logger{logg}, nil
 }
 
 func (l Logger) Error(msg string) {
-	// TODO
+	l.logger.Error(msg)
 }
 
-// TODO
+func (l Logger) Warning(msg string) {
+	l.logger.Warning(msg)
+}
+
+func (l Logger) Info(msg string) {
+	l.logger.Info(msg)
+}
+
+func (l Logger) Debug(msg string) {
+	l.logger.Debug(msg)
+}
+
+func (l *Logger) LogRequest(r *http.Request, statusCode int, requestDuration time.Duration) {
+	l.logger.Infof(
+		"%s [%s] %s %s %s %d %s %q",
+		r.RemoteAddr,
+		time.Now().Format(time.RFC1123Z),
+		r.Method,
+		r.RequestURI,
+		r.Proto,
+		statusCode,
+		requestDuration,
+		r.UserAgent(),
+	)
+}
