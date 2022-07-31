@@ -41,6 +41,10 @@ func (s *Storage) Update(id uuid.UUID, event storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if _, ok := s.events[id]; !ok {
+		return storage.ErrEventNotExists
+	}
+
 	s.events[id] = event
 
 	return nil
@@ -57,6 +61,14 @@ func (s *Storage) Delete(id uuid.UUID) error {
 	delete(s.events, id)
 
 	return nil
+}
+
+func (s *Storage) Get(id uuid.UUID) (storage.Event, error) {
+	if event, ok := s.events[id]; ok {
+		return event, nil
+	}
+
+	return storage.Event{}, storage.ErrEventNotExists
 }
 
 func (s *Storage) SelectOnDay(t time.Time) ([]storage.Event, error) {

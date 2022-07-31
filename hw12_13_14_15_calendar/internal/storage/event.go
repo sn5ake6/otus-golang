@@ -13,13 +13,13 @@ var (
 )
 
 type Event struct {
-	ID          uuid.UUID
-	Title       string
-	BeginAt     time.Time
-	EndAt       time.Time
-	Description string
-	UserID      uuid.UUID
-	NotifyAt    time.Time
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	BeginAt     time.Time `json:"beginAt" db:"begin_at"`
+	EndAt       time.Time `json:"endAt" db:"end_at"`
+	Description string    `json:"description"`
+	UserID      uuid.UUID `json:"userId" db:"user_id"`
+	NotifyAt    time.Time `json:"notifyAt" db:"notify_at"`
 }
 
 func NewEvent(
