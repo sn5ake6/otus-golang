@@ -40,7 +40,7 @@ func (l Logger) Debug(msg string) {
 	l.logger.Debug(msg)
 }
 
-func (l *Logger) LogRequest(r *http.Request, statusCode int, requestDuration time.Duration) {
+func (l *Logger) LogHTTPRequest(r *http.Request, statusCode int, requestDuration time.Duration) {
 	l.logger.Infof(
 		"%s [%s] %s %s %s %d %s %q",
 		r.RemoteAddr,
@@ -51,5 +51,15 @@ func (l *Logger) LogRequest(r *http.Request, statusCode int, requestDuration tim
 		statusCode,
 		requestDuration,
 		r.UserAgent(),
+	)
+}
+
+func (l *Logger) LogGRPCRequest(r interface{}, method string, requestDuration time.Duration) {
+	l.logger.Infof(
+		"[%s] %s %s %s",
+		time.Now().Format(time.RFC1123Z),
+		method,
+		requestDuration,
+		r,
 	)
 }

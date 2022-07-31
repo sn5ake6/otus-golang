@@ -13,7 +13,11 @@ type App struct {
 	Storage Storage
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Error(message string)
+	Warning(msg string)
+	Info(message string)
+	Debug(msg string)
 }
 
 type Storage interface {
@@ -21,6 +25,7 @@ type Storage interface {
 	Create(event storage.Event) error
 	Update(id uuid.UUID, event storage.Event) error
 	Delete(id uuid.UUID) error
+	Get(id uuid.UUID) (storage.Event, error)
 	SelectOnDay(t time.Time) ([]storage.Event, error)
 	SelectOnWeek(t time.Time) ([]storage.Event, error)
 	SelectOnMonth(t time.Time) ([]storage.Event, error)
@@ -33,10 +38,30 @@ func New(logger Logger, storage Storage) *App {
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	// TODO
-	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
+func (a *App) CreateEvent(ctx context.Context, event storage.Event) error {
+	return a.Storage.Create(event)
 }
 
-// TODO
+func (a *App) UpdateEvent(ctx context.Context, id uuid.UUID, event storage.Event) error {
+	return a.Storage.Update(id, event)
+}
+
+func (a *App) DeleteEvent(ctx context.Context, id uuid.UUID) error {
+	return a.Storage.Delete(id)
+}
+
+func (a *App) GetEvent(ctx context.Context, id uuid.UUID) (storage.Event, error) {
+	return a.Storage.Get(id)
+}
+
+func (a *App) SelectOnDayEvents(ctx context.Context, t time.Time) ([]storage.Event, error) {
+	return a.Storage.SelectOnDay(t)
+}
+
+func (a *App) SelectOnWeekEvents(ctx context.Context, t time.Time) ([]storage.Event, error) {
+	return a.Storage.SelectOnWeek(t)
+}
+
+func (a *App) SelectOnMonthEvents(ctx context.Context, t time.Time) ([]storage.Event, error) {
+	return a.Storage.SelectOnMonth(t)
+}

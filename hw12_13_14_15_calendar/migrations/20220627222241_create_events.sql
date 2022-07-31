@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS events
 (
-  id UUID NOT NULL,
+  id UUID NOT NULL PRIMARY KEY,
   title TEXT NOT NULL,
   begin_at TIMESTAMP NOT NULL,
   end_at TIMESTAMP NOT NULL,

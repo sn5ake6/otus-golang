@@ -8,3 +8,7 @@ dsn = "postgres://calendar:calendar@localhost:5432/calendar?sslmode=disable"
 [HTTPServer]
 host = "127.0.0.1"
 port = "8000"
+
+[GRPCServer]
+host = "127.0.0.1"
+port = "50051"

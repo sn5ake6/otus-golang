@@ -106,6 +106,32 @@ func (s *Storage) Delete(id uuid.UUID) error {
 	return err
 }
 
+func (s *Storage) Get(id uuid.UUID) (storage.Event, error) {
+	sql := `
+		SELECT
+		 id,
+		 title,
+		 begin_at,
+		 end_at,
+		 description,
+		 user_id,
+		 notify_at
+		FROM
+		  events
+		WHERE
+		  id = $1
+		;
+	`
+	row := s.db.QueryRowxContext(s.ctx, sql, id)
+
+	var event storage.Event
+	if err := row.StructScan(&event); err != nil {
+		return storage.Event{}, err
+	}
+
+	return event, nil
+}
+
 func (s *Storage) SelectOnDay(t time.Time) ([]storage.Event, error) {
 	return s.SelectBeetween(t, t.AddDate(0, 0, 1))
 }

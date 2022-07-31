@@ -58,6 +58,9 @@ func TestStorage(t *testing.T) {
 
 		updatedEvent := updatedOnDayEvents[0]
 		require.Equal(t, event, updatedEvent)
+
+		err = storage.Update(uuid.New(), event)
+		require.True(t, errors.Is(err, memorystorage.ErrEventNotExists))
 	})
 
 	t.Run("select cases", func(t *testing.T) {
@@ -87,6 +90,10 @@ func TestStorage(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, onMonthEvents, 1)
 		require.Equal(t, event, onMonthEvents[0])
+
+		eventFromStorage, err := storage.Get(event.ID)
+		require.NoError(t, err)
+		require.Equal(t, event, eventFromStorage)
 	})
 
 	t.Run("delete cases", func(t *testing.T) {
