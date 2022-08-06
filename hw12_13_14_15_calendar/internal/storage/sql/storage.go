@@ -40,9 +40,9 @@ func (s *Storage) Close() error {
 func (s *Storage) Create(event storage.Event) error {
 	sql := `
 		INSERT INTO events
-		  (id, title, begin_at, end_at, description, user_id, notify_at)
+		  (id, title, begin_at, end_at, description, user_id, notify_at, notified_at)
 		VALUES
-		  ($1, $2, $3, $4, $5, $6, $7)
+		  ($1, $2, $3, $4, $5, $6, $7, $8)
 		;
 	`
 
@@ -56,6 +56,7 @@ func (s *Storage) Create(event storage.Event) error {
 		event.Description,
 		event.UserID,
 		event.NotifyAt,
+		event.NotifiedAt,
 	)
 
 	return err
@@ -67,11 +68,12 @@ func (s *Storage) Update(id uuid.UUID, event storage.Event) error {
 		  events
 		SET
 		  title = $2,
-		  start_at = $3,
+		  begin_at = $3,
 		  end_at = $4,
 		  description = $5,
 		  user_id = $6,
-		  notify_at = $7
+		  notify_at = $7,
+		  notified_at = $8
 		WHERE
 		  id = $1
 		;
@@ -87,6 +89,7 @@ func (s *Storage) Update(id uuid.UUID, event storage.Event) error {
 		event.Description,
 		event.UserID,
 		event.NotifyAt,
+		event.NotifiedAt,
 	)
 
 	return err
@@ -115,7 +118,8 @@ func (s *Storage) Get(id uuid.UUID) (storage.Event, error) {
 		 end_at,
 		 description,
 		 user_id,
-		 notify_at
+		 notify_at,
+		 notified_at
 		FROM
 		  events
 		WHERE
@@ -153,7 +157,8 @@ func (s *Storage) SelectBeetween(beginAt time.Time, endAt time.Time) ([]storage.
 		 end_at,
 		 description,
 		 user_id,
-		 notify_at
+		 notify_at,
+		 notified_at
 		FROM
 		  events
 		WHERE
@@ -166,6 +171,52 @@ func (s *Storage) SelectBeetween(beginAt time.Time, endAt time.Time) ([]storage.
 	}
 	defer rows.Close()
 
+	return convertToEvents(rows)
+}
+
+func (s *Storage) GetForNotify(t time.Time) ([]storage.Event, error) {
+	sql := `
+		SELECT
+		  id,
+		  title,
+		  begin_at,
+		  end_at,
+		  description,
+		  user_id,
+		  notify_at,
+		  notified_at
+		FROM
+		  events
+		WHERE
+		  notified_at = $1
+		  AND notify_at != $1
+		  AND notify_at <= $2
+		;
+	`
+	rows, err := s.db.QueryxContext(s.ctx, sql, time.Time{}, t)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return convertToEvents(rows)
+}
+
+func (s *Storage) DeleteOld(t time.Time) error {
+	sql := `
+		DELETE
+		FROM
+		  events
+		WHERE
+		  begin_at <= $1
+		;
+	`
+	_, err := s.db.ExecContext(s.ctx, sql, t)
+
+	return err
+}
+
+func convertToEvents(rows *sqlx.Rows) ([]storage.Event, error) {
 	events := make([]storage.Event, 0)
 	for rows.Next() {
 		var event storage.Event

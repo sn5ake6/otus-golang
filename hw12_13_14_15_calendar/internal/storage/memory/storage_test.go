@@ -94,6 +94,15 @@ func TestStorage(t *testing.T) {
 		eventFromStorage, err := storage.Get(event.ID)
 		require.NoError(t, err)
 		require.Equal(t, event, eventFromStorage)
+
+		emptyEventsForNotify, err := storage.GetForNotify(event.NotifyAt.Add(-1 * time.Second))
+		require.NoError(t, err)
+		require.Len(t, emptyEventsForNotify, 0)
+
+		eventsForNotify, err := storage.GetForNotify(event.NotifyAt.Add(time.Second))
+		require.NoError(t, err)
+		require.Len(t, eventsForNotify, 1)
+		require.Equal(t, event, eventsForNotify[0])
 	})
 
 	t.Run("delete cases", func(t *testing.T) {
@@ -105,6 +114,21 @@ func TestStorage(t *testing.T) {
 		require.Len(t, deletedOnDayEvents, 0)
 
 		err = storage.Delete(uuid.New())
+		require.True(t, errors.Is(err, memorystorage.ErrEventNotExists))
+
+		err = storage.Create(event)
+		require.NoError(t, err)
+
+		err = storage.DeleteOld(event.BeginAt.Add(-1 * time.Second))
+		require.NoError(t, err)
+
+		_, err = storage.Get(event.ID)
+		require.NoError(t, err)
+
+		err = storage.DeleteOld(event.BeginAt.Add(time.Second))
+		require.NoError(t, err)
+
+		_, err = storage.Get(event.ID)
 		require.True(t, errors.Is(err, memorystorage.ErrEventNotExists))
 	})
 }

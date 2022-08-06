@@ -1,20 +1,37 @@
 BIN := "./bin/calendar"
+BIN_SCHEDULER := "./bin/calendar_scheduler"
+BIN_SENDER := "./bin/calendar_sender"
+
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
-db:
+up:
 	docker-compose -f deployments/docker-compose.yaml up -d
 
 migrate:
 	goose --dir=migrations postgres "postgres://calendar:calendar@localhost:5432/calendar?sslmode=disable" up
 
-build:
+build-calendar:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
-run: build
+build-scheduler:
+	go build -v -o $(BIN_SCHEDULER) -ldflags "$(LDFLAGS)" ./cmd/calendar_scheduler
+
+build-sender:
+	go build -v -o $(BIN_SENDER) -ldflags "$(LDFLAGS)" ./cmd/calendar_sender
+
+build: build-calendar build-scheduler build-sender
+
+run-calendar: build-calendar
 	$(BIN) -config ./configs/config.toml
+
+run-scheduler: build-scheduler
+	$(BIN_SCHEDULER) -config ./configs/config_scheduler.toml
+
+run-sender: build-sender
+	$(BIN_SENDER) -config ./configs/config_sender.toml
 
 build-img:
 	docker build \

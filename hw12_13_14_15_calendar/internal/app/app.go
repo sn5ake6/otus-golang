@@ -13,24 +13,6 @@ type App struct {
 	Storage Storage
 }
 
-type Logger interface {
-	Error(message string)
-	Warning(msg string)
-	Info(message string)
-	Debug(msg string)
-}
-
-type Storage interface {
-	Connect(ctx context.Context) error
-	Create(event storage.Event) error
-	Update(id uuid.UUID, event storage.Event) error
-	Delete(id uuid.UUID) error
-	Get(id uuid.UUID) (storage.Event, error)
-	SelectOnDay(t time.Time) ([]storage.Event, error)
-	SelectOnWeek(t time.Time) ([]storage.Event, error)
-	SelectOnMonth(t time.Time) ([]storage.Event, error)
-}
-
 func New(logger Logger, storage Storage) *App {
 	return &App{
 		Logger:  logger,
