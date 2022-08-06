@@ -1,0 +1,13 @@
+[logger]
+level = "INFO"
+
+[storage]
+type = "sql"
+dsn = "postgres://calendar:calendar@localhost:5432/calendar?sslmode=disable"
+
+[queue]
+type = "rmq"
+dsn = "amqp://guest:guest@localhost:5672"
+exchange = "notifications"
+exchangeType = "direct"
+queue = "notifications"

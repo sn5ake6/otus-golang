@@ -84,7 +84,7 @@ func (s *Storage) SelectOnMonth(t time.Time) ([]storage.Event, error) {
 }
 
 func (s *Storage) SelectBeetween(beginAt time.Time, endAt time.Time) ([]storage.Event, error) {
-	events := make([]storage.Event, 0, len(s.events))
+	events := make([]storage.Event, 0)
 	for _, event := range s.events {
 		if event.BeginAt.After(beginAt) && event.BeginAt.Before(endAt) {
 			events = append(events, event)
@@ -92,4 +92,28 @@ func (s *Storage) SelectBeetween(beginAt time.Time, endAt time.Time) ([]storage.
 	}
 
 	return events, nil
+}
+
+func (s *Storage) GetForNotify(t time.Time) ([]storage.Event, error) {
+	events := make([]storage.Event, 0)
+	for _, event := range s.events {
+		if event.NotifiedAt.IsZero() && !event.NotifyAt.IsZero() && event.NotifyAt.Sub(t) <= 0 {
+			events = append(events, event)
+		}
+	}
+
+	return events, nil
+}
+
+func (s *Storage) DeleteOld(t time.Time) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for id, event := range s.events {
+		if event.BeginAt.Sub(t) <= 0 {
+			delete(s.events, id)
+		}
+	}
+
+	return nil
 }

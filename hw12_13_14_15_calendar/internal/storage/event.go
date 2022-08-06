@@ -20,6 +20,7 @@ type Event struct {
 	Description string    `json:"description"`
 	UserID      uuid.UUID `json:"userId" db:"user_id"`
 	NotifyAt    time.Time `json:"notifyAt" db:"notify_at"`
+	NotifiedAt  time.Time `json:"notifiedAt" db:"notified_at"`
 }
 
 func NewEvent(

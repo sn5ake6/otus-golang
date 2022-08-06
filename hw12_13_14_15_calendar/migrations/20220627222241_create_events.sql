@@ -6,9 +6,10 @@ CREATE TABLE IF NOT EXISTS events
   title TEXT NOT NULL,
   begin_at TIMESTAMP NOT NULL,
   end_at TIMESTAMP NOT NULL,
-  description TEXT,
+  description TEXT NOT NULL,
   user_id UUID NOT NULL,
-  notify_at TIMESTAMP
+  notify_at TIMESTAMP NOT NULL,
+  notified_at TIMESTAMP NOT NULL
 );
 -- +goose StatementEnd
 

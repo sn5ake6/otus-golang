@@ -28,7 +28,8 @@ func TestHTTPServerCRUDOperations(t *testing.T) {
 		"endAt":"2022-07-24T18:00:00Z",
 		"description":"some description",
 		"userId":"6b216e09-7ab3-41f9-ba57-cc94d45fe759",
-		"notifyAt":"2022-07-24T15:00:00Z"
+		"notifyAt":"2022-07-24T15:00:00Z",
+		"notifiedAt":"0001-01-01T00:00:00Z"
 	}`)
 
 	expectedBody := replaceUnexpectedSpaces(body.String())
@@ -40,7 +41,8 @@ func TestHTTPServerCRUDOperations(t *testing.T) {
 		"endAt":"2022-07-25T18:00:00Z",
 		"description":"updated description",
 		"userId":"6b216e09-7ab3-41f9-ba57-cc94d45fe759",
-		"notifyAt":"2022-07-25T15:00:00Z"
+		"notifyAt":"2022-07-25T15:00:00Z",
+		"notifiedAt":"0001-01-01T00:00:00Z"
 	}`)
 
 	expectedUpdatedBody := replaceUnexpectedSpaces(updatedBody.String())
@@ -171,7 +173,8 @@ func TestHTTPServerSelectOperations(t *testing.T) {
 		"endAt":"2022-07-24T18:00:00Z",
 		"description":"some description",
 		"userId":"6b216e09-7ab3-41f9-ba57-cc94d45fe759",
-		"notifyAt":"2022-07-24T15:00:00Z"
+		"notifyAt":"2022-07-24T15:00:00Z",
+		"notifiedAt":"0001-01-01T00:00:00Z"
 	}`)
 
 	expectedBody := replaceUnexpectedSpaces(body.String())
