@@ -6,6 +6,8 @@ require (
 	github.com/BurntSushi/toml v1.1.0
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/cockroachdb/apd v1.1.0 // indirect
+	github.com/cucumber/godog v0.12.5
+	github.com/cucumber/messages-go/v16 v16.0.1
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0

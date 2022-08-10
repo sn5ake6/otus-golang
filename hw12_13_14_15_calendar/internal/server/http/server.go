@@ -42,11 +42,11 @@ func NewRouter(logger Logger, app Application) http.Handler {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
-	router.HandleFunc("/events/", loggingMiddleware(handler.GetEvents, logger)).Methods("GET")
-	router.HandleFunc("/events/", loggingMiddleware(handler.CreateEvent, logger)).Methods("POST")
-	router.HandleFunc("/events/{uuid}/", loggingMiddleware(handler.GetEvent, logger)).Methods("GET")
-	router.HandleFunc("/events/{uuid}/", loggingMiddleware(handler.UpdateEvent, logger)).Methods("POST")
-	router.HandleFunc("/events/{uuid}/", loggingMiddleware(handler.DeleteEvent, logger)).Methods("DELETE")
+	router.HandleFunc("/events/", loggingMiddleware(handler.GetEvents, logger)).Methods(http.MethodGet)
+	router.HandleFunc("/events/", loggingMiddleware(handler.CreateEvent, logger)).Methods(http.MethodPost)
+	router.HandleFunc("/events/{uuid}/", loggingMiddleware(handler.GetEvent, logger)).Methods(http.MethodGet)
+	router.HandleFunc("/events/{uuid}/", loggingMiddleware(handler.UpdateEvent, logger)).Methods(http.MethodPut)
+	router.HandleFunc("/events/{uuid}/", loggingMiddleware(handler.DeleteEvent, logger)).Methods(http.MethodDelete)
 
 	return router
 }

@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+  integration_tests:
+    build:
+      context: ../
+      dockerfile: build/test/Dockerfile
+    networks:
+      - calendar-network
+
+networks:
+  calendar-network:
+    driver: bridge

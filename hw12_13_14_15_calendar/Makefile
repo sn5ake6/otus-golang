@@ -10,6 +10,9 @@ LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%d
 up:
 	docker-compose -f deployments/docker-compose.yaml up -d
 
+down:
+	docker-compose -f deployments/docker-compose.yaml down
+
 migrate:
 	goose --dir=migrations postgres "postgres://calendar:calendar@localhost:5432/calendar?sslmode=disable" up
 
@@ -37,7 +40,7 @@ build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
 		-t $(DOCKER_IMG) \
-		-f build/Dockerfile .
+		-f build/calendar/Dockerfile .
 
 run-img: build-img
 	docker run $(DOCKER_IMG)
@@ -47,6 +50,14 @@ version: build
 
 test:
 	go test -race ./internal/...
+
+integration-tests:
+	set -e; \
+	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.test.yaml up -d; \
+	status_code=0; \
+	docker-compose -f deployments/docker-compose.test.yaml run integration_tests go test -v ./tests/ || status_code=$$?; \
+	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.test.yaml down -v --remove-orphans; \
+	exit $$status_code;
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
