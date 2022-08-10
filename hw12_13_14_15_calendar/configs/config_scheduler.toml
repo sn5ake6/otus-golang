@@ -3,11 +3,11 @@ level = "INFO"
 
 [storage]
 type = "sql"
-dsn = "postgres://calendar:calendar@localhost:5432/calendar?sslmode=disable"
+dsn = "postgres://calendar:calendar@postgres:5432/calendar?sslmode=disable"
 
 [queue]
 type = "rmq"
-dsn = "amqp://guest:guest@localhost:5672"
+dsn = "amqp://guest:guest@rabbit:5672"
 queue = "notifications"
 
 [intervals]

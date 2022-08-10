@@ -23,14 +23,19 @@ RUN CGO_ENABLED=0 go build \
 # На выходе тонкий образ
 FROM alpine:3.9
 
+RUN apk add --no-cache bash
+
 LABEL ORGANIZATION="OTUS Online Education"
 LABEL SERVICE="calendar"
-LABEL MAINTAINERS="student@otus.ru"
+LABEL MAINTAINERS="sn5ake6@gmail.com"
 
-ENV BIN_FILE "/opt/calendar/calendar-app"
+ENV BIN_FILE /opt/calendar/calendar-app
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
 ENV CONFIG_FILE /etc/calendar/config.toml
 COPY ./configs/config.toml ${CONFIG_FILE}
 
-CMD ${BIN_FILE} -config ${CONFIG_FILE}
+COPY wait-for-it.sh wait-for-it.sh
+RUN chmod +x wait-for-it.sh
+
+CMD ["${BIN_FILE}", "-config", "${CONFIG_FILE}"]
